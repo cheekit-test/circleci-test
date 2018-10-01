@@ -1,0 +1,49 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: circleci/ruby:2.5.1-node-browsers
+        environment:
+          PGHOST: 127.0.0.1
+          PGUSER: wka
+          RAILS_ENV: test
+      - image: circleci/node:8.11.3
+      - image: circleci/postgres:9.6-alpine-ram
+        environment:
+          POSTGRES_USER: wka
+          POSTGRES_DB: wka_test
+          POSTGRES_PASSWORD: ""
+    steps:
+      - checkout
+      - run: sudo apt-get update
+      - run: sudo apt-get install postgresql-client-9.6
+
+      - type: cache-restore
+        name: Restore bundle cache
+        key: yarn-test-{{ checksum "yarn.lock" }}
+
+      - restore_cache:
+          name: Restore Yarn Package Cache
+          keys:
+            - yarn-packages-{{ checksum "yarn.lock" }}
+
+      - run:
+          name: Bundle Install
+          command: bin/bundle install --path vendor/bundle
+
+      - run:
+          name: Yarn Install
+          command: yarn install --ignore-engines
+
+      - run: sleep 300
+
+      - save_cache:
+          name: Save Yarn Package Cache
+          key: yarn-packages-{{ checksum "yarn.lock" }}
+          paths:
+            - ~/.cache/yarn
+workflows:
+  version: 2
+  build_and_test:
+    jobs:
+      - build
