@@ -28,10 +28,6 @@ jobs:
             - yarn-packages-{{ checksum "yarn.lock" }}
 
       - run:
-          name: Bundle Install
-          command: bin/bundle install --path vendor/bundle
-
-      - run:
           name: Yarn Install
           command: yarn install --ignore-engines
 
